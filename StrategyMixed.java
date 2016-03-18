@@ -1,4 +1,3 @@
-import java.util.Arrays;
 import java.util.Random;
 
 /**
@@ -7,134 +6,96 @@ import java.util.Random;
  * Plays tit-for-tit if it doesn't have enough history yet.
  * The array of doubles is what the GA has to find.
  */
-public class StrategyMixed extends Strategy{
+public class StrategyMixed extends Strategy
+{
+    int mCurrentIteration = 0;
 
-    int currentIteration = 0;
-    int numberOfStrategyIndices;
-    int[] history;
-    int[] strategy;
+    int[] mStrategy;
+    int[] mHistory;
 
-    // added for analysis
-    private int[] strategyIndexFrequency;
-
-    public StrategyMixed(int numberOfIterationsRemembered){
+    public StrategyMixed()
+    {
         name = "Mixed Strategy";
 
-        // "* 2" because each iterations has a move for player1 and player2
-        history = new int[numberOfIterationsRemembered * 2];
-        numberOfStrategyIndices = (int)Math.pow(2,history.length);
         // 0 = defect, 1 = cooperate
         opponentLastMove = 1;
-
-        // TODO: replace with GA found strategy
-        //initializeWithRandomMixedStrategy();
-
-        strategyIndexFrequency = new int[numberOfStrategyIndices];
-
-        //System.out.println("Strategy: " + Arrays.toString(strategy));
-        //System.out.println("History: " + Arrays.toString(history));
     }
-
 
     // This is what the GA has to find, let the GA call this function to set strategy
-    public void setStrategy(int[] s){
+    public void decodeChromoToStrategy(Chromo chromo)
+    {
+        int strategyLength = chromo.getGeneSize() * chromo.getNumGenes();
 
-        // each entry in the history is a 0 or 1, making the number of possible histories 2^|h|
-        // we should have a strategy for history
-        if(s.length != numberOfStrategyIndices){
-            System.out.println("Invalid strategy based on history length");
-            System.out.println("History length: " + history.length);
-            System.out.println("Strategy length: " + s.length);
-            return;
+        mStrategy = new int[strategyLength];
+
+        // TODO: Remove magic number
+        mHistory = new int[8];
+
+        // Copy data into strategy
+        for(int strategyIndex = 0; strategyIndex < strategyLength; strategyIndex++)
+        {
+            int geneIndex = strategyIndex / chromo.getGeneSize();
+            int dnaIndex = strategyIndex % chromo.getGeneSize();
+
+            mStrategy[strategyIndex] = chromo.getGeneList()[geneIndex][dnaIndex];
         }
-        strategy = s;
     }
 
-    public int nextMove(){
+    public int nextMove()
+    {
+        int nextMove;
 
-        //System.out.println("\nIter: "+currentIteration);
-        //System.out.println("History: "+ Arrays.toString(history));
-
-        // play tit for tat if we don't have enough history
-        if(currentIteration*2 < history.length){
-
-            currentIteration++;
-            return opponentLastMove;
-
-        } else {
-            // get strategy index from current history of game
+        // Play Tit-For-Tat if there isn't enough history
+        if(mCurrentIteration < mHistory.length / 2)
+        {
+            nextMove = opponentLastMove;
+        }
+        else
+        {
+            // Get strategy index from current history of game
             int index = getIndex();
 
-            // added for analysis
-            strategyIndexFrequency[index]++;
-
-            // if lower or equal to cooperation strategy probability, then cooperate
-            int move = strategy[index];
-
-            //System.out.println("randomDraw: " + randomDraw + " Pr: " + strategy[index]);
-            currentIteration++;
-            return move;
+            nextMove = mStrategy[index];
         }
+
+        mCurrentIteration++;
+
+        return nextMove;
     }
 
-    /*
-    Converts history array to a number.
-    Works as follows, from the starting index, the values are read from left to right
-    and put into a binary number from right to left. Wrap around as needed. For example
-
-    startIdx = 4,
-                           |<- start here
-    history = [0, 1, 0, 0, 1, 1]  becomes in binary 001011
-    which is 11 in base 10
-     */
-    private int getIndex(){
+    private int getIndex()
+    {
         int index = 0;
-        for(int i = 0; i < history.length; i++){
-            index += history[i] * (int)Math.pow(2, history.length - 1 - i);
+        for(int i = 0; i < mHistory.length; i++)
+        {
+            index += mHistory[i] * Math.pow(2, mHistory.length - 1 - i);
         }
         return index;
     }
 
+    private void recordMoveInHistory(int move)
+    {
+        for(int i = 0; i < mHistory.length - 1; i++)
+        {
+            mHistory[i] = mHistory[i + 1];
+        }
+
+        mHistory[mHistory.length - 1] = move;
+    }
+
     @Override
-    public void saveOpponentMove(int move)  {
+    public void saveOpponentMove(int move)
+    {
         opponentLastMove = move;
-        
-        for(int i = 0; i < history.length - 1; i++)
-        {
-            history[i] = history[i + 1];
-        }
-        
-        history[history.length - 1] = move;
+
+        recordMoveInHistory(move);
     }
 
     @Override
-    public void saveMyMove(int move)  {
+    public void saveMyMove(int move)
+    {
         myLastMove = move;
-        
-        for(int i = 0; i < history.length - 1; i++)
-        {
-            history[i] = history[i + 1];
-        }
-        
-        history[history.length - 1] = move;
-    }
 
-    public void initializeWithRandomMixedStrategy(){
-        strategy = new int[numberOfStrategyIndices];
-        Random rand = new Random();
-
-        for(int i = 0; i < strategy.length; i++){
-            strategy[i] = rand.nextInt(2); // Will produce 0 or 1
-        }
-    }
-
-    public int getModeStrategyIndex(){
-        int topIndex = 0;
-        for(int i = 0; i < numberOfStrategyIndices; i++){
-            if(strategyIndexFrequency[i] > strategyIndexFrequency[topIndex]){
-                topIndex = i;
-            }
-        }
-        return topIndex;
+        recordMoveInHistory(move);
     }
 }

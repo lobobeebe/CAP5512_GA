@@ -11,10 +11,12 @@ public class RunStatistics
 	private int mBestOverAllRun;
 	private int mBestOverAllGeneration;
 
+	private int mPopulationSumFitness;
 	private int mGenerationSumFitness;
 	private int mRunSumAverageFitness;
 	private int mRunSumBestFitness;
-	
+
+    private int mNumPopulation;
 	private int mNumGenerations;
 	private int mNumRuns;
 	
@@ -24,24 +26,23 @@ public class RunStatistics
 	{
 		mFitnessFunction = fitnessFunction;
 	}
-	
-	public Chromo getBestChromoOfRun()
-	{
-		return mBestOfRunChromo;
-	}
-	
-	public int getGenerationSumFitness()
-	{
-		return mGenerationSumFitness;
-	}
-	
+
 	public void recordSolution(int generationNum, int runNum, Chromo solution)
 	{
-		Chromo clone = solution.clone();
-		
+		Chromo clone = new Chromo(null, solution.getNumGenes(), solution.getGeneSize());
+		clone.copyDna(solution);
+        clone.setRawFitness(solution.getRawFitness());
+
+        // Population Stats
+        mPopulationSumFitness += clone.getRawFitness();
+        mNumPopulation++;
+
+        // Generation Stats
+        mGenerationSumFitness += clone.getRawFitness();
+
 		// Check if its the best of the generation.
 		if(mBestOfGenChromo == null ||
-			clone.mRawFitness < mBestOfGenChromo.mRawFitness)
+			clone.getRawFitness() > mBestOfGenChromo.getRawFitness())
 		{
 			mBestOfGenChromo = clone;
 			mBestOfGenGeneration = generationNum;
@@ -50,7 +51,7 @@ public class RunStatistics
 			// Check if its the best of the run.
 			// Can only be the best of the run if its also the best of the generation.
 			if(mBestOfRunChromo == null ||
-				clone.mRawFitness < mBestOfRunChromo.mRawFitness)
+				clone.getRawFitness() > mBestOfRunChromo.getRawFitness())
 			{
 				mBestOfRunChromo = clone;
 				mBestOfRunGeneration = generationNum;
@@ -60,7 +61,7 @@ public class RunStatistics
 				// Can only be the best overall if its also the best of the run.
 
 				if(mBestOverAllChromo == null ||
-					clone.mRawFitness < mBestOverAllChromo.mRawFitness)
+					clone.getRawFitness() > mBestOverAllChromo.getRawFitness())
 				{
 					mBestOverAllChromo = clone;
 					mBestOverAllGeneration = generationNum;
@@ -73,7 +74,10 @@ public class RunStatistics
 	public void printGeneration()
 	{
 		System.out.println("Run " + mBestOfGenRun + " Generation " + mBestOfGenGeneration + ":");
-		System.out.println("\tBest: " + mFitnessFunction.getChromosomeToString(mBestOfGenChromo));
+		// TODO: Fix print outs
+        System.out.println("\tAverage Fitness: " + (mPopulationSumFitness / mNumPopulation));
+        System.out.println("\tBest Fitness: " + mBestOfGenChromo.getRawFitness());
+        System.out.println("\tBest Chromo Of Population: " + mBestOfGenChromo);
 		
 		// Reset the generation for new populations
 		resetGeneration();
@@ -83,10 +87,10 @@ public class RunStatistics
 	{
 		System.out.println();
 		System.out.println("Run " + mBestOfRunRun + ":");
-		System.out.println("\tAverage: " + (mGenerationSumFitness / mNumGenerations));
-		System.out.println("\tBest: Generation " + mBestOfRunGeneration + ": " + 
-		    mFitnessFunction.getChromosomeToString(mBestOfRunChromo));
-		
+		System.out.println("\tAverage Fitness: " + (mGenerationSumFitness / mNumGenerations));
+        // TODO: Fix print outs
+		System.out.println("\tBest Fitness: " + mBestOfRunChromo.getRawFitness());
+        System.out.println("\tBest Chromo Of Run: Generation " + mBestOfRunGeneration + ": " + mBestOfRunChromo);
 		// Reset the run for new populations
 		resetRun();
 	}
@@ -96,16 +100,19 @@ public class RunStatistics
 		System.out.println();
 		System.out.println();
 		System.out.println("Over All:");
-		System.out.println("\tAverage Average: " + (mRunSumAverageFitness / mNumRuns));
-		System.out.println("\tAverage Best: " + (mRunSumBestFitness / mNumRuns));
-		System.out.println("\tBest: Run " + mBestOverAllRun + ": Generation " + mBestOverAllGeneration
-             + ": " + mFitnessFunction.getChromosomeToString(mBestOverAllChromo));
+		System.out.println("\tAverage Run Average Fitness: " + (mRunSumAverageFitness / mNumRuns));
+		System.out.println("\tAverage Run Best Fitness: " + (mRunSumBestFitness / mNumRuns));
+        System.out.println("\tBest Fitness: " + mBestOverAllChromo.getRawFitness());
+        // TODO: Fix print outs
+        System.out.println("\tBest Chromo: Run " + mBestOverAllRun + ": Generation " + mBestOverAllGeneration
+             + ": " + mBestOverAllChromo);
 	}
 	
 	private void resetGeneration()
 	{
-		mGenerationSumFitness += mBestOfGenChromo.mRawFitness;
-		
+        mPopulationSumFitness = 0;
+        mNumPopulation = 0;
+
 		mBestOfGenChromo = null;
 		mBestOfGenGeneration = -1;
 		mBestOfGenRun = -1;
@@ -114,7 +121,7 @@ public class RunStatistics
 	
 	private void resetRun()
 	{
-		mRunSumBestFitness += mBestOfRunChromo.mRawFitness;
+		mRunSumBestFitness += mBestOfRunChromo.getRawFitness();
 		mRunSumAverageFitness += (mGenerationSumFitness / mNumGenerations);
 		mNumGenerations = 0;
 		mGenerationSumFitness = 0;

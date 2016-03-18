@@ -12,7 +12,7 @@ public class FitnessComparator implements Comparator<Integer>
 	@Override
 	public int compare(Integer o1, Integer o2)
 	{
-		return (int)(mChromoList[o1].mRawFitness - mChromoList[o2].mRawFitness);
+		return (int)(mChromoList[o1].getRawFitness() - mChromoList[o2].getRawFitness());
 	}
 	
 }

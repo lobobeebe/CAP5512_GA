@@ -12,11 +12,9 @@ public abstract class FitnessFunction
 	public FitnessFunction(String name)
 	{
 		mName = name;
-		System.out.println("Setting up Fitness Function.....");
+		System.out.println("Setting up Fitness Function: " + mName);
 	}
 
 	public abstract void doRawFitness(Chromo X);
-	
-	public abstract String getChromosomeToString(Chromo X);
 }
 
