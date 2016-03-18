@@ -1,6 +1,6 @@
 import java.util.Random;
 
-public class Chromo
+class Chromo
 {
 	private int[][] mGeneList;
 	private int mNumGenes;
@@ -9,7 +9,7 @@ public class Chromo
 	private double mRawFitness;
 	private Random mRandomizer;
 
-	public Chromo(Random randomizer, int numGenes, int geneSize)
+	Chromo(Random randomizer, int numGenes, int geneSize)
 	{
 		mRandomizer = randomizer;
         mNumGenes = numGenes;
@@ -30,7 +30,7 @@ public class Chromo
 		}
 	}
 
-	public void copyDna(Chromo other)
+	void copyDna(Chromo other)
 	{
 		// Copy all genes from other
 		for(int geneIndex = 0; geneIndex < mNumGenes; geneIndex++)
@@ -38,15 +38,14 @@ public class Chromo
 			mGeneList[geneIndex] = other.mGeneList[geneIndex].clone();
 		}
 	}
-    
-    // TODO: Mutation rate as parameter?
-	public void doMutation()
+
+	void doMutation(double mutationRate)
 	{		
         for (int geneIndex = 0; geneIndex < mNumGenes; geneIndex++)
         {
             for(int dnaIndex = 0; dnaIndex < mGeneSize; dnaIndex++)
             {
-                if (mRandomizer.nextDouble() < Parameters.mutationRate)
+                if (mRandomizer.nextDouble() < mutationRate)
                 {
                     // Flip the DNA value
 					mGeneList[geneIndex][dnaIndex] = 1 - mGeneList[geneIndex][dnaIndex];
@@ -70,27 +69,27 @@ public class Chromo
 		return stringRepresentation;
 	}
 
-	public int[][] getGeneList()
+	int[][] getGeneList()
 	{
 		return mGeneList;
 	}
 
-	public int getGeneSize()
+	int getGeneSize()
 	{
 		return mGeneSize;
 	}
 
-	public int getNumGenes()
+	int getNumGenes()
 	{
 		return mNumGenes;
 	}
 
-	public double getRawFitness()
+	double getRawFitness()
 	{
 		return mRawFitness;
 	}
 
-	public void performOnePointCrossover(Chromo parentA, Chromo parentB, int crossOverGeneIndex, int crossOverDnaIndex)
+	void performOnePointCrossover(Chromo parentA, Chromo parentB, int crossOverGeneIndex, int crossOverDnaIndex)
 	{
 		// Take the genes before the cross over point from parent A
 		for(int geneIndex = 0; geneIndex < crossOverGeneIndex; geneIndex++)
@@ -117,7 +116,7 @@ public class Chromo
 		}
 	}
 
-	public void setRawFitness(double fitness)
+	void setRawFitness(double fitness)
 	{
 		mRawFitness = fitness;
 	}

@@ -1,7 +1,7 @@
 import java.util.Arrays;
 import java.util.Random;
 
-public class GeneticAlgorithm
+class GeneticAlgorithm
 {
 	private Parameters mParams;
 	private Random mRandomizer;
@@ -9,6 +9,7 @@ public class GeneticAlgorithm
 	private Chromo[] mPopulation;
 	private int mNumGenes;
 	private int mGeneSize;
+	private double mMutationRate;
 
 	private FitnessFunction mFitnessFunction;
 	private RunStatistics mStatistics;
@@ -24,6 +25,7 @@ public class GeneticAlgorithm
 		mPopulation = new Chromo[mParams.popSize];
 		mNumGenes = mParams.numGenes;
 		mGeneSize = mParams.geneSize;
+		mMutationRate = mParams.mutationRate;
 
 		// TODO: Magic string
 		if (mParams.problemType.equals("PT"))
@@ -109,7 +111,7 @@ public class GeneticAlgorithm
 		// Perform mutation
 		for (int childIndex = 0; childIndex < population.length; childIndex++)
 		{
-			newPopulation[childIndex].doMutation();
+			newPopulation[childIndex].doMutation(mMutationRate);
 		}
 		
 		return newPopulation;
