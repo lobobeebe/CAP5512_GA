@@ -17,7 +17,7 @@ public class Chromo
         mGeneSize = geneSize;
 		
 		//  Set gene list to a sequence of random keys
-		mDnaList = new Integer[mNumGenes][mGeneSize];
+		mDnaList = new int[mNumGenes][mGeneSize];
 		
 		for (int geneIndex = 0; geneIndex < mNumGenes; geneIndex++)
 		{
@@ -38,7 +38,7 @@ public class Chromo
                 if (mRandomizer.nextDouble() < Parameters.mutationRate)
                 {
                     // Flip the DNA value
-                    mDnaList[geneIndex][dnaIndex] = 1 - mDnaList[geneIndex];
+                    mDnaList[geneIndex][dnaIndex] = 1 - mDnaList[geneIndex][dnaIndex];
                 }
             }
         }
