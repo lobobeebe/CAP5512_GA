@@ -1,86 +1,51 @@
 import java.util.Arrays;
 import java.util.Random;
 
-public class Chromo implements Cloneable
+public class Chromo
 {
-	public Integer[] mGeneList;
-	public Integer[] mSortedGeneListIndices;
-	
+	private int[][] mDnaList;
+	private int mNumGenes;
+    private int mGeneSize;
+    
 	public double mRawFitness;
 	public Random mRandomizer;
 
-	public Chromo(Random randomizer)
+	public Chromo(Random randomizer, int numGenes, int geneSize)
 	{
 		mRandomizer = randomizer;
+        mNumGenes = numGenes;
+        mGeneSize = geneSize;
 		
 		//  Set gene list to a sequence of random keys
-		mGeneList = new Integer[35];
-		mSortedGeneListIndices = new Integer[35];
+		mDnaList = new Integer[mNumGenes][mGeneSize];
 		
-		for (int i = 0; i < 35; i++)
+		for (int geneIndex = 0; geneIndex < mNumGenes; geneIndex++)
 		{
-			mGeneList[i] = mRandomizer.nextInt(100);
-			mSortedGeneListIndices[i] = i;
+            for (int dnaIndex = 0; dnaIndex < mGeneSize; dnaIndex++)
+            {
+                mDnaList[geneIndex][dnaIndex] = mRandomizer.nextInt(100);   
+            }
 		}
-		
-		mRawFitness = 9999999;   //  Fitness not yet evaluated
 	}
-	
-	public Chromo clone()
-	{
-		Chromo clone = new Chromo(mRandomizer);
-		
-		clone.mGeneList = mGeneList.clone();
-		clone.mSortedGeneListIndices = mSortedGeneListIndices.clone();
-		clone.mRawFitness = mRawFitness;
-		
-		return clone;
-	}
-
-	public void sortGeneIndices()
-	{
-		Arrays.sort(mSortedGeneListIndices, new GeneIndexComparator(this));
-	}
-
+    
+    // TODO: Mutation rate as parameter?
 	public void doMutation()
-	{
-		sortGeneIndices();
-		
-		// Mutation per Gene
-		if(Parameters.mutationType == 1)
-		{
-			for (int j = 0; j < Parameters.geneSize * Parameters.numGenes; j++)
-			{
-				if (mRandomizer.nextDouble() < Parameters.mutationRate)
-				{
-					int mutationIndex = mRandomizer.nextInt(35);
-					
-					int tempValue = mGeneList[mSortedGeneListIndices[mutationIndex]];
-					mGeneList[mSortedGeneListIndices[mutationIndex]] = mGeneList[mSortedGeneListIndices[j]];
-					mGeneList[mSortedGeneListIndices[j]] = tempValue;
-				}
-			}
-		}
-		// Mutation per Chromosome
-		else if(Parameters.mutationType == 2)
-		{
-			double mutationRandom = mRandomizer.nextDouble();
-			if (mutationRandom < Parameters.mutationRate)
-			{
-				for (int i = 0; i < Parameters.numGenes; i++)
-				{
-					mGeneList[i] = mRandomizer.nextInt(100);
-				}
-			}
-		}
-		else
-		{
-			System.out.println("Invalid mutation type");
-		}
+	{		
+        for (int geneIndex = 0; geneIndex < mNumGenes; geneIndex++)
+        {
+            for(int dnaIndex = 0; dnaIndex < mGeneSize; dnaIndex++)
+            {
+                if (mRandomizer.nextDouble() < Parameters.mutationRate)
+                {
+                    // Flip the DNA value
+                    mDnaList[geneIndex][dnaIndex] = 1 - mDnaList[geneIndex];
+                }
+            }
+        }
 	}
 	
-	public Integer[] getGeneList()
+	public int[] getDnaList()
 	{
-		return mGeneList;
+		return mDnaList;
 	}
 }
