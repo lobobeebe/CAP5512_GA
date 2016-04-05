@@ -3,47 +3,66 @@ import java.util.Random;
 
 class GeneticAlgorithm
 {
-	private Parameters mParams;
+    private static final String SINGLE_CROSSOVER = "SINGLE";
+
+    private static final String TOURNAMENT_SELECTION = "TOURNAMENT";
+
+	private ConfigManager mParams;
 	private Random mRandomizer;
-	
+
 	private Chromo[] mPopulation;
 	private int mNumGenes;
 	private int mGeneSize;
+    private int mMinDnaValue;
+    private int mMaxDnaValue;
+    private int mNumRuns;
+    private int mNumGenerations;
+    private String mCrossOverType;
+    private double mCrossOverRate;
 	private double mMutationRate;
+    private String mSelectionType;
 
 	private FitnessFunction mFitnessFunction;
 	private RunStatistics mStatistics;
-	
-	public GeneticAlgorithm(Parameters params)
+
+	GeneticAlgorithm(ConfigManager params)
 	{
 		mParams = params;
 	}
-	
-	public void setup()
-	{
-		mRandomizer = new Random(mParams.seed);
-		mPopulation = new Chromo[mParams.popSize];
-		mNumGenes = mParams.numGenes;
-		mGeneSize = mParams.geneSize;
-		mMutationRate = mParams.mutationRate;
 
-		// TODO: Magic string
-		if (mParams.problemType.equals("PT"))
+	void setup()
+	{
+		mRandomizer = new Random(mParams.getIntParameter("RandomSeed"));
+		mPopulation = new Chromo[mParams.getIntParameter("PopulationSize")];
+		mNumGenes = mParams.getIntParameter("NumGenes");
+		mGeneSize = mParams.getIntParameter("GeneSize");
+        mNumRuns = mParams.getIntParameter("NumRuns");
+        mMinDnaValue = mParams.getIntParameter("MinDnaValue");
+        mMaxDnaValue = mParams.getIntParameter("MaxDnaValue");
+        mNumGenerations = mParams.getIntParameter("NumGenerations");
+		mMutationRate = mParams.getDoubleParameter("MutationRate");
+        mCrossOverRate = mParams.getDoubleParameter("CrossOverRate");
+        mCrossOverType = mParams.getStringParameter("CrossOverType");
+        mSelectionType = mParams.getStringParameter("SelectionType");
+
+        String problemType = mParams.getStringParameter("ProblemType");
+
+		if (problemType.equals("PrisonersTournament"))
 		{
-			mFitnessFunction = new PrisonersTournament(mNumGenes, mGeneSize);
+			mFitnessFunction = new PrisonersTournament(mParams, mRandomizer);
 		}
 		else
 		{
-			System.err.println("Invalid problem Type: " + mParams.problemType);
+			System.err.println("Invalid problem Type: " + problemType);
 		}
-		
-		mStatistics = new RunStatistics(mFitnessFunction);
+
+		mStatistics = new RunStatistics();
 	}
-	
-	public void begin()
+
+	void begin()
 	{
 		// Do regular runs
-		for (int runNum = 1; runNum <= mParams.numRuns; runNum++)
+		for (int runNum = 1; runNum <= mNumRuns; runNum++)
 		{
 			// Perform a single run with new chromos
 			performRun(mPopulation, runNum, true);
@@ -51,14 +70,14 @@ class GeneticAlgorithm
 			// Print Statistics
 			mStatistics.printRun();
 		}
-		
+
 		mStatistics.printOverAll();
 	}
-	
-	public Chromo[] performCrossOver(Chromo[] population)
+
+	private Chromo[] performCrossOver(Chromo[] population)
 	{
 		// One Point
-		if (mParams.xoverType == 1)
+		if (mCrossOverType.equalsIgnoreCase(SINGLE_CROSSOVER))
 		{
 			return performOnePointCrossOver(population);
 		}
@@ -69,21 +88,20 @@ class GeneticAlgorithm
 		}
 	}
 
-	// TODO: Consider putting single crossover function in Chromo?
-	public Chromo[] performOnePointCrossOver(Chromo[] population)
+	private Chromo[] performOnePointCrossOver(Chromo[] population)
 	{
 		Chromo[] newPopulation = new Chromo[population.length];
-		
+
 		// Do Crossover
 		for (int childIndex = 0; childIndex < population.length - 1; childIndex += 2)
 		{
 			Chromo parentA = selectParent(population);
 			Chromo parentB = selectParent(population);
 
-			Chromo childA = new Chromo(mRandomizer, mNumGenes, mGeneSize);
-            Chromo childB = new Chromo(mRandomizer, mNumGenes, mGeneSize);
-			
-			if(mRandomizer.nextDouble() < mParams.xoverRate)
+			Chromo childA = new Chromo(mRandomizer, mNumGenes, mGeneSize, mMinDnaValue, mMaxDnaValue);
+            Chromo childB = new Chromo(mRandomizer, mNumGenes, mGeneSize, mMinDnaValue, mMaxDnaValue);
+
+			if(mRandomizer.nextDouble() < mCrossOverRate)
 			{
                 // Create cross over points
 				int crossOverGeneIndex = mRandomizer.nextInt(mNumGenes);
@@ -107,100 +125,99 @@ class GeneticAlgorithm
             newPopulation[childIndex] = childA;
             newPopulation[childIndex + 1] = childB;
 		}
-		
+
 		// Perform mutation
 		for (int childIndex = 0; childIndex < population.length; childIndex++)
 		{
 			newPopulation[childIndex].doMutation(mMutationRate);
 		}
-		
+
 		return newPopulation;
 	}
-	
-	public Chromo[] performGeneration(Chromo[] population, int generationNum, int runNum)
+
+	private Chromo[] performGeneration(Chromo[] population, int generationNum, int runNum)
 	{
 		// Evaluate the individual's fitness
 		for (int individual = 0; individual < population.length; individual++)
 		{
-			mFitnessFunction.doRawFitness(population[individual]);
+			mFitnessFunction.doRawFitness(population[individual], population);
 			mStatistics.recordSolution(generationNum, runNum, population[individual]);
 		}
-		
+
 		// Cross-Over
 		return performCrossOver(population);
 	}
-	
-	public Chromo[] performRun(Chromo[] population, int runNum, boolean initChromos)
+
+	private Chromo[] performRun(Chromo[] population, int runNum, boolean initChromos)
 	{
 		if(initChromos)
 		{
 			// Initialize population
 			for (int individual = 0; individual < population.length; individual++)
 			{
-				population[individual] = new Chromo(mRandomizer, mNumGenes, mGeneSize);
+				population[individual] = new Chromo(mRandomizer, mNumGenes, mGeneSize, mMinDnaValue, mMaxDnaValue);
 			}
 		}
-		
+
 		// Perform generations
-		for (int generationNum = 1; generationNum <= mParams.generations; generationNum++)
+		for (int generationNum = 1; generationNum <= mNumGenerations; generationNum++)
 		{
 			population = performGeneration(population, generationNum, runNum);
-			
+
 			mStatistics.printGeneration();
 		}
-		
+
 		return population;
 	}
-	
+
 	private Chromo selectParent(Chromo[] population)
 	{
 		int parentIndex = -1;
-		
-		switch (mParams.selectType)
-		{
-			// Tournament
-			case 2:
-				parentIndex = selectParentTournament(population);
-				break;
-				
-			// No Selection
-			default:
-				// TODO: Make selectType parameter?
-				System.out.println("Unsupported Selection Type: " + mParams.selectType + " Expect Exceptions.");
-				break;
+
+
+		// Tournament
+		if(mSelectionType.equalsIgnoreCase(TOURNAMENT_SELECTION))
+        {
+            parentIndex = selectParentTournament(population);
+        }
+        else
+        {
+            System.out.println("Unsupported Selection Type: " + mSelectionType + " Expect Exceptions.");
 		}
-		
+
 		return population[parentIndex];
 	}
-	
+
 	private int selectParentTournament(Chromo[] population)
 	{
+		int parentIndex;
+
 		// TODO: Set these parameters to configurable
 		int tournamentSize = 20;
-		double selectBestProbability = 0.7;
-		
-		int bestIndex;
-		
-		Integer[] tournament = new Integer[tournamentSize];
-		
+		double selectBestProbability = 0.8;
+
+		int bestIndex = 0;
+
 		for(int i = 0; i < tournamentSize; i++)
 		{
-			// Choose a random index from the total population
-			tournament[i] = mRandomizer.nextInt(population.length);
+			int nextIndex = mRandomizer.nextInt(population.length);
+			if(population[nextIndex].getRawFitness() > population[bestIndex].getRawFitness())
+			{
+				bestIndex = nextIndex;
+			}
 		}
-		
-		// Sort by fitness
-		Arrays.sort(tournament, new FitnessComparator(population));
-		
+
+		// Sort by fitness in descending order
+
 		if(mRandomizer.nextDouble() < selectBestProbability)
 		{
-			bestIndex = tournament[0];
+			parentIndex = bestIndex;
 		}
 		else
 		{
-			bestIndex = tournament[mRandomizer.nextInt(tournamentSize)];
+			parentIndex = mRandomizer.nextInt(population.length);
 		}
-		
-		return bestIndex;
+
+		return parentIndex;
 	}
 }

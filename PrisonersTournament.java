@@ -1,53 +1,143 @@
+import java.util.ArrayList;
+import java.util.Random;
+
 public class PrisonersTournament extends FitnessFunction
 {
-    private int mNumGenes;
-    private int mGeneSize;
+    private static final String AXELROD_ORIGINAL_STRATEGY = "AXELROD_ORIGINAL";
+    private static final String AXELROD_PROBABILITY_STRATEGY = "AXELROD_PROBABILISTIC";
+    private static final String AXELROD_TIT_FOR_TAT_STRATEGY = "AXELROD_TIT_FOR_TAT";
+    private static final String TIT_FOR_TAT_STRATEGY = "TIT_FOR_TAT";
+    private static final String TIT_FOR_TWO_TATS_STRATEGY = "TIT_FOR_TWO_TATS";
+    private static final String ALWAYS_COOPERATE_STRATEGY = "ALWAYS_COOPERATE";
+    private static final String ALWAYS_DEFECT_STRATEGY = "ALWAYS_DEFECT";
+    private static final String COEVOLUTIONARY_STRATEGY = "COEVOLUTIONARY";
 
-    PrisonersTournament(int numGenes, int geneSize)
+    private String mStrategyName;
+    private String[] mOpponentStrategyNames;
+    private int mCoEvolutionaryIterations;
+    private int mIpdIterations;
+    private Random mRandomizer;
+
+    private ConfigManager mConfigManager;
+
+    PrisonersTournament(ConfigManager configManager, Random randomizer)
     {
         super("Iterated Prisoner's Dilemma");
 
-        mNumGenes = numGenes;
-        mGeneSize = geneSize;
+        mRandomizer = randomizer;
+        mConfigManager = configManager;
 
-        // For the IPD, limit possible size vs num
-        // TODO: Beef up this explanation when not tired
-        if (Math.pow(2, mGeneSize) != mNumGenes * mGeneSize)
-        {
-            System.err.println("Invalid (NumGenes, GeneSize) pair: (" + mNumGenes + ", " + mGeneSize + ")");
-        }
+        mStrategyName = mConfigManager.getStringParameter("TournamentStrategy");
+        mOpponentStrategyNames = mConfigManager.getCsvParameter("TournamentSuite");
+        mCoEvolutionaryIterations = mConfigManager.getIntParameter("CoevolutionaryIterations");
+        mIpdIterations = mConfigManager.getIntParameter("IpdIterations");
     }
-    
-    public void doRawFitness(Chromo X)
+
+    public void doRawFitness(Chromo X, Chromo[] population)
     {
         // Create player strategy with chromosome
-        StrategyMixed player = new StrategyMixed();
-        player.decodeChromoToStrategy(X);
+        Strategy player;
 
-        Strategy opponent;
-
-        // TODO: Switch what type of strat to play
-        opponent = new StrategyTitForTat();
-
-        if (opponent != null)
+        if (mStrategyName.equalsIgnoreCase(AXELROD_ORIGINAL_STRATEGY))
         {
-            X.setRawFitness(getIteratedPrisonersDilemmaScore(player, opponent));
+            player = new StrategyAxelrod(mRandomizer, mConfigManager);
+        }
+        else if (mStrategyName.equalsIgnoreCase(AXELROD_PROBABILITY_STRATEGY))
+        {
+            player = new StrategyAxelrodProbabilistic(mRandomizer, mConfigManager);
+        }
+        else if (mStrategyName.equalsIgnoreCase(AXELROD_TIT_FOR_TAT_STRATEGY))
+        {
+            player = new StrategyAxelrodTitForTat(mRandomizer, mConfigManager);
         }
         else
         {
-            System.err.println("Cannot perform IPD against invalid opponent.");
+            System.err.println("Cannot create invalid strategy : " + mStrategyName);
+            return;
         }
+
+        player.decodeChromoToStrategy(X);
+
+        double sumFitness = 0;
+
+        // Create the opponent suite
+        ArrayList<Strategy> opponentSuite = new ArrayList<>();
+
+        for (String strategy : mOpponentStrategyNames)
+        {
+            if (strategy.equalsIgnoreCase(TIT_FOR_TAT_STRATEGY))
+            {
+                opponentSuite.add(new StrategyTitForTat());
+            }
+            else if(strategy.equalsIgnoreCase(TIT_FOR_TWO_TATS_STRATEGY))
+            {
+                opponentSuite.add(new StrategyTitForTwoTats());
+            }
+            else if (strategy.equalsIgnoreCase(ALWAYS_COOPERATE_STRATEGY))
+            {
+                opponentSuite.add(new StrategyAlwaysCooperate());
+            }
+            else if (strategy.equalsIgnoreCase(ALWAYS_DEFECT_STRATEGY))
+            {
+                opponentSuite.add(new StrategyAlwaysDefect());
+            }
+            else if (strategy.equalsIgnoreCase(COEVOLUTIONARY_STRATEGY))
+            {
+                for (int coIterations = 0; coIterations < mCoEvolutionaryIterations; coIterations++)
+                {
+                    Chromo other = population[mRandomizer.nextInt(population.length)];
+
+                    Strategy opponent;
+
+                    if (mStrategyName.equalsIgnoreCase(AXELROD_ORIGINAL_STRATEGY))
+                    {
+                        opponent = new StrategyAxelrod(mRandomizer, mConfigManager);
+                    }
+                    else if (mStrategyName.equalsIgnoreCase(AXELROD_PROBABILITY_STRATEGY))
+                    {
+                        opponent = new StrategyAxelrodProbabilistic(mRandomizer, mConfigManager);
+                    }
+                    else if (mStrategyName.equalsIgnoreCase(AXELROD_TIT_FOR_TAT_STRATEGY))
+                    {
+                        opponent = new StrategyAxelrodTitForTat(mRandomizer, mConfigManager);
+                    }
+                    else
+                    {
+                        // Can never reach here
+                        return;
+                    }
+
+                    opponent.decodeChromoToStrategy(other);
+
+                    opponentSuite.add(opponent);
+                }
+            }
+            else
+            {
+                System.err.println("Cannot perform IPD against invalid strategy : " + strategy);
+            }
+        }
+
+        for (Strategy opponent : opponentSuite)
+        {
+            sumFitness += getIteratedPrisonersDilemmaScore(player, opponent);
+        }
+
+        if (opponentSuite.size() > 1)
+        {
+            sumFitness /= opponentSuite.size();
+        }
+
+        X.setRawFitness(sumFitness);
     }
 
-    private int getIteratedPrisonersDilemmaScore(Strategy player, Strategy opponent)
+    private double getIteratedPrisonersDilemmaScore(Strategy player, Strategy opponent)
     {
         // Play IPD
         IteratedPD game = new IteratedPD(player, opponent);
-        // TODO: Make this configurable
-        game.runSteps(100);
+        game.runSteps(mIpdIterations);
 
-        // TODO: Decide on Fitness evaluation from IPD
-        return game.player1Score();
+        return game.player1Score();// / (double) mIpdIterations;
     }
 
 }

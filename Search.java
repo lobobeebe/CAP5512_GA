@@ -18,7 +18,8 @@ public class Search
 
 		//  Read Parameter File
 		System.out.println("\nParameter File Name is: " + args[0] + "\n");
-		Parameters params = new Parameters(args[0]);
+		ConfigManager params = new ConfigManager();
+		params.decodeFile(args[0]);
 		
 		GeneticAlgorithm algorithm = new GeneticAlgorithm(params);
 		

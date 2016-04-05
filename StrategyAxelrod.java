@@ -6,22 +6,29 @@ import java.util.Random;
  * Plays tit-for-tit if it doesn't have enough history yet.
  * The array of doubles is what the GA has to find.
  */
-public class StrategyMixed extends Strategy
+public class StrategyAxelrod extends Strategy
 {
-    int mCurrentIteration = 0;
+    private int mCurrentIteration = 0;
 
-    int[] mStrategy;
-    int[] mHistory;
+    private int[] mStrategy;
+    private int[] mHistory;
 
-    public StrategyMixed()
+    protected Random mRandomizer;
+    protected ConfigManager mConfigManager;
+
+    public StrategyAxelrod(Random randomizer, ConfigManager configManager)
     {
-        name = "Mixed Strategy";
+        mRandomizer = randomizer;
+        mConfigManager = configManager;
+
+        name = "Axelrod";
 
         // 0 = defect, 1 = cooperate
         opponentLastMove = 1;
     }
 
     // This is what the GA has to find, let the GA call this function to set strategy
+    @Override
     public void decodeChromoToStrategy(Chromo chromo)
     {
         int strategyLength = chromo.getGeneSize() * chromo.getNumGenes();
@@ -55,12 +62,17 @@ public class StrategyMixed extends Strategy
             // Get strategy index from current history of game
             int index = getIndex();
 
-            nextMove = mStrategy[index];
+            nextMove = getMoveFromStrategyValue(mStrategy[index]);
         }
 
         mCurrentIteration++;
 
         return nextMove;
+    }
+
+    protected int getMoveFromStrategyValue(int strategyValue)
+    {
+        return strategyValue;
     }
 
     private int getIndex()

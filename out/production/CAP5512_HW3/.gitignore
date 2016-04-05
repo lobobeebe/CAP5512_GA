@@ -1,0 +1,3 @@
+# Prevent IntelliJ files from being added to git
+.idea
+*.iml

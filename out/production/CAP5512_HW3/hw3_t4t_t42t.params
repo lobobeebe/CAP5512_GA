@@ -18,6 +18,6 @@ MaxDnaValue = 1
 # AXELROD_PROBABILISTIC requires MinDnaValue = 0
 TournamentStrategy = AXELROD_TIT_FOR_TAT
 # Comma separated vector similar to the following suite that tests against all possible values
-# ex. TournamentSuite = COEVOLUTIONARY, TIT_FOR_TAT, ALWAYS_DEFECT, ALWAYS_COOPERATE
-TournamentSuite = TIT_FOR_TAT
+# ex. TournamentSuite = COEVOLUTIONARY, TIT_FOR_TAT, TIT_FOR_TWO_TATS, ALWAYS_DEFECT, ALWAYS_COOPERATE
+TournamentSuite = TIT_FOR_TWO_TATS
 CoevolutionaryIterations = 20

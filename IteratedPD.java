@@ -8,12 +8,11 @@ public class IteratedPD extends Object
      * Iterated Prisoner's Dilemma.
      */
     int verbose = 0;
-    int maxSteps;
 
     PrisonersDilemma pd;
     Strategy p1, p2;
-    int p1Score;
-    int p2Score;
+    double p1Score;
+    double p2Score;
 
     public IteratedPD(Strategy player1, Strategy player2)
     {
@@ -39,30 +38,16 @@ public class IteratedPD extends Object
             pd.playPD();
             p1Score += pd.getPlayer1Payoff();
             p2Score += pd.getPlayer2Payoff();
+        }
 
-            if(verbose == 1) {
-                System.out.printf(
-                        " t %3d   P1 move %d payoff %d (%3d)   P2 move %d payoff %d (%3d)\n",
-                        i, pd.getPlayer1Move(), pd.getPlayer1Payoff(), p1Score,
-                        pd.getPlayer2Move(), pd.getPlayer2Payoff(), p2Score);
-            }
-
-/*
-         System.out.printf(" Iteration %d\n", i);
-         System.out.printf("      Player1 move %d,   Player2 move %d\n",
-             pd.getPlayer1Move(), pd.getPlayer2Move());
-         System.out.printf("      Player1 payoff %d, Player2 payoff %d\n",
-             pd.getPlayer1Payoff(), pd.getPlayer2Payoff());
-         System.out.printf("      Player1 sum %d,    Player2 sum %d\n",
-             p1Score, p2Score);
-         System.out.printf("      Player1 OLM %d,    Player2 OLM %d\n",
-             p1.getOpponentLastMove(), p2.getOpponentLastMove() );
-*/
-        }  /* for i */
+        p1Score = p1Score / (double) maxSteps;
+        p2Score = p2Score / (double) maxSteps;
     }
 
-    public int player1Score()  {return p1Score;}
-    public int player2Score()  {return p2Score;}
+    public double player1Score()
+    {
+        return p1Score;
+    }
 
 }  /* class IteratedPD */
 

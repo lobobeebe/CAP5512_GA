@@ -5,15 +5,20 @@ class Chromo
 	private int[][] mGeneList;
 	private int mNumGenes;
     private int mGeneSize;
-    
+    private int mMinDnaValue;
+    private int mMaxDnaValue;
+
 	private double mRawFitness;
 	private Random mRandomizer;
 
-	Chromo(Random randomizer, int numGenes, int geneSize)
+	Chromo(Random randomizer, int numGenes, int geneSize, int minDnaValue, int maxDnaValue)
 	{
 		mRandomizer = randomizer;
         mNumGenes = numGenes;
         mGeneSize = geneSize;
+
+        mMinDnaValue = minDnaValue;
+        mMaxDnaValue = maxDnaValue;
 		
 		//  Set gene list to a sequence of random keys
 		mGeneList = new int[mNumGenes][mGeneSize];
@@ -24,7 +29,7 @@ class Chromo
 			{
 				for (int dnaIndex = 0; dnaIndex < mGeneSize; dnaIndex++)
 				{
-					mGeneList[geneIndex][dnaIndex] = mRandomizer.nextInt(2);
+					mGeneList[geneIndex][dnaIndex] = getRandomValueWithinBounds();
 				}
 			}
 		}
@@ -48,10 +53,15 @@ class Chromo
                 if (mRandomizer.nextDouble() < mutationRate)
                 {
                     // Flip the DNA value
-					mGeneList[geneIndex][dnaIndex] = 1 - mGeneList[geneIndex][dnaIndex];
+					mGeneList[geneIndex][dnaIndex] = getRandomValueWithinBounds();
                 }
             }
         }
+	}
+
+	private int getRandomValueWithinBounds()
+	{
+		return mMinDnaValue + mRandomizer.nextInt(mMaxDnaValue - mMinDnaValue + 1);
 	}
 
 	public String toString()
