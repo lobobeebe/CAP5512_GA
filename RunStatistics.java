@@ -1,6 +1,13 @@
+//============================================================================**
+// RunStatistics Class
+//============================================================================**
 
 public class RunStatistics
 {
+	//----------------------------------------------------------------------------**
+	// Private member variables
+	//----------------------------------------------------------------------------**
+
 	private Chromo mBestOfGenChromo;
 	private Chromo mBestOfRunChromo;
 	private Chromo mBestOverAllChromo;
@@ -18,10 +25,17 @@ public class RunStatistics
 	private int mNumGenerations;
 	private int mNumRuns;
 
-	
+	//============================================================================**
+	// RunStatistics()
+	//============================================================================**
+
 	public RunStatistics()
 	{
 	}
+
+	//============================================================================**
+	// recordSolution()
+	//============================================================================**
 
 	public void recordSolution(int generationNum, int runNum, Chromo solution)
 	{
@@ -39,14 +53,14 @@ public class RunStatistics
 			clone.getRawFitness() > mBestOfGenChromo.getRawFitness())
 		{
 			mBestOfGenChromo = clone;
-			
+
 			// Check if its the best of the run.
 			// Can only be the best of the run if its also the best of the generation.
 			if(mBestOfRunChromo == null ||
 				clone.getRawFitness() > mBestOfRunChromo.getRawFitness())
 			{
 				mBestOfRunChromo = clone;
-				
+
 				// Check if its the best overall.
 				// Can only be the best overall if its also the best of the run.
 
@@ -60,7 +74,11 @@ public class RunStatistics
 			}
 		}
 	}
-	
+
+	//============================================================================**
+	// printGeneration()
+	//============================================================================**
+
 	public void printGeneration()
 	{
         double generationAverageFitness = (mPopulationFitnessSum / (double) mNumPopulation);
@@ -75,7 +93,11 @@ public class RunStatistics
 
 		resetGeneration();
 	}
-	
+
+	//============================================================================**
+	// printRun()
+	//============================================================================**
+
 	public void printRun()
 	{
         double bestFitnessOfRun = mBestOfRunChromo.getRawFitness();
@@ -88,7 +110,11 @@ public class RunStatistics
 		// Reset the run for new populations
 		resetRun();
 	}
-	
+
+	//============================================================================**
+	// printOverAll()
+	//============================================================================**
+
 	public void printOverAll()
 	{
 		System.out.println("Over All:");
@@ -99,7 +125,11 @@ public class RunStatistics
         System.out.println("\tBest Chromo: Run " + mBestOverAllRun + ": Generation " + mBestOverAllGeneration
              + ": " + mBestOverAllChromo);
 	}
-	
+
+	//============================================================================**
+	// resetGeneration()
+	//============================================================================**
+
 	private void resetGeneration()
 	{
         mNumPopulation = 0;
@@ -109,12 +139,16 @@ public class RunStatistics
 		mBestOfGenChromo = null;
 		mNumGenerations++;
 	}
-	
+
+	//============================================================================**
+	// resetRun()
+	//============================================================================**
+
 	private void resetRun()
 	{
         mGenerationAverageFitnessSum = 0;
 		mNumGenerations = 0;
-		
+
 		mBestOfRunChromo = null;
 		mNumRuns++;
 	}

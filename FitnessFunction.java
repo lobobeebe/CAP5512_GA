@@ -1,20 +1,32 @@
-/******************************************************************************
-*  A Teaching GA					  Developed by Hal Stringer & Annie Wu, UCF
-*  Version 2, January 18, 2004
-*******************************************************************************/
-
+//============================================================================**
+// FitnessFunction Class
+// Description: This class is meant to be the base class for any fitness
+// function that could be utilized within the GA.
+//============================================================================**
 
 public abstract class FitnessFunction
 {
+    //----------------------------------------------------------------------------**
+    // Private member variables
+    //----------------------------------------------------------------------------**
 
-	public String mName;
+    private String mName;
 
-	public FitnessFunction(String name)
+    //============================================================================**
+    // FitnessFunction()
+    //============================================================================**
+
+    public FitnessFunction(String name)
 	{
 		mName = name;
 		System.out.println("Setting up Fitness Function....." + mName);
 	}
 
-	public abstract void doRawFitness(Chromo X, Chromo[] population);
+    //============================================================================**
+    // doRawFitness()
+    // Description: Calculates and sets the raw fitness of the Chromo parameter X.
+    //============================================================================**
+
+	public abstract void doRawFitness(Chromo X);
 }
 

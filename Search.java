@@ -1,18 +1,22 @@
-/******************************************************************************
-*  HW2 Brian J. Olive
-*  The following code is an adaptation of:
-*
-*  A Teaching GA					  Developed by Hal Stringer & Annie Wu, UCF
-*  Version 2, January 18, 2004
-*******************************************************************************/
+//============================================================================**
+// Imports
+//============================================================================**
 
 import java.util.*;
 
+//============================================================================**
+// Search Class
+//============================================================================**
+
 public class Search
 {
-	public static void main(String[] args) throws java.io.IOException
+    //============================================================================**
+    // main()
+    // Description: Entry point of the program.
+    //============================================================================**
+
+    public static void main(String[] args) throws java.io.IOException
 	{
-		System.setProperty("java.util.Arrays.useLegacyMergeSort", "true");
 		Calendar dateAndTime = Calendar.getInstance(); 
 		Date startTime = dateAndTime.getTime();
 

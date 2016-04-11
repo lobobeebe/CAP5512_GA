@@ -1,7 +1,19 @@
+//============================================================================**
+// Imports
+//============================================================================**
+
 import java.util.Random;
+
+//============================================================================**
+// Chromo Class
+//============================================================================**
 
 class Chromo
 {
+    //----------------------------------------------------------------------------**
+    // Private member variables
+    //----------------------------------------------------------------------------**
+
 	private int[][] mGeneList;
 	private int mNumGenes;
     private int mGeneSize;
@@ -11,7 +23,11 @@ class Chromo
 	private double mRawFitness;
 	private Random mRandomizer;
 
-	Chromo(Random randomizer, int numGenes, int geneSize, int minDnaValue, int maxDnaValue)
+    //============================================================================**
+    // Chromo()
+    //============================================================================**
+
+    Chromo(Random randomizer, int numGenes, int geneSize, int minDnaValue, int maxDnaValue)
 	{
 		mRandomizer = randomizer;
         mNumGenes = numGenes;
@@ -35,7 +51,11 @@ class Chromo
 		}
 	}
 
-	void copyDna(Chromo other)
+    //============================================================================**
+    // copyDna()
+    //============================================================================**
+
+    void copyDna(Chromo other)
 	{
 		// Copy all genes from other
 		for(int geneIndex = 0; geneIndex < mNumGenes; geneIndex++)
@@ -43,6 +63,10 @@ class Chromo
 			mGeneList[geneIndex] = other.mGeneList[geneIndex].clone();
 		}
 	}
+
+    //============================================================================**
+    // doMutation()
+    //============================================================================**
 
 	void doMutation(double mutationRate)
 	{		
@@ -59,45 +83,54 @@ class Chromo
         }
 	}
 
-	private int getRandomValueWithinBounds()
-	{
-		return mMinDnaValue + mRandomizer.nextInt(mMaxDnaValue - mMinDnaValue + 1);
-	}
-
-	public String toString()
-	{
-		String stringRepresentation = "";
-
-		for (int geneIndex = 0; geneIndex < mNumGenes; geneIndex++)
-		{
-			for (int dnaIndex = 0; dnaIndex < mGeneSize; dnaIndex++)
-			{
-				stringRepresentation += (mGeneList[geneIndex][dnaIndex] + " ");
-			}
-		}
-
-		return stringRepresentation;
-	}
+    //============================================================================**
+    // getGeneList()
+    //============================================================================**
 
 	int[][] getGeneList()
 	{
 		return mGeneList;
 	}
 
+    //============================================================================**
+    // getGeneSize()
+    //============================================================================**
+
 	int getGeneSize()
 	{
 		return mGeneSize;
 	}
+
+    //============================================================================**
+    // getNumGenes()
+    //============================================================================**
 
 	int getNumGenes()
 	{
 		return mNumGenes;
 	}
 
+    //============================================================================**
+    // getRandomValueWithinBounds()
+    //============================================================================**
+
+    private int getRandomValueWithinBounds()
+    {
+        return mMinDnaValue + mRandomizer.nextInt(mMaxDnaValue - mMinDnaValue + 1);
+    }
+
+    //============================================================================**
+    // getRawFitness()
+    //============================================================================**
+
 	double getRawFitness()
 	{
 		return mRawFitness;
 	}
+
+    //============================================================================**
+    // performOnPointCrossOver()
+    //============================================================================**
 
 	void performOnePointCrossover(Chromo parentA, Chromo parentB, int crossOverGeneIndex, int crossOverDnaIndex)
 	{
@@ -126,8 +159,31 @@ class Chromo
 		}
 	}
 
+    //============================================================================**
+    // setRawFitness()
+    //============================================================================**
+
 	void setRawFitness(double fitness)
 	{
 		mRawFitness = fitness;
 	}
+
+    //============================================================================**
+    // toString()
+    //============================================================================**
+
+    public String toString()
+    {
+        String stringRepresentation = "";
+
+        for (int geneIndex = 0; geneIndex < mNumGenes; geneIndex++)
+        {
+            for (int dnaIndex = 0; dnaIndex < mGeneSize; dnaIndex++)
+            {
+                stringRepresentation += (mGeneList[geneIndex][dnaIndex] + " ");
+            }
+        }
+
+        return stringRepresentation;
+    }
 }
