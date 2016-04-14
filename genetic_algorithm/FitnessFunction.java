@@ -1,5 +1,5 @@
-//============================================================================**
-// FitnessFunction Class
+package genetic_algorithm;//============================================================================**
+// genetic_algorithm.FitnessFunction Class
 // Description: This class is meant to be the base class for any fitness
 // function that could be utilized within the GA.
 //============================================================================**
@@ -13,7 +13,7 @@ public abstract class FitnessFunction
     private String mName;
 
     //============================================================================**
-    // FitnessFunction()
+    // genetic_algorithm.FitnessFunction()
     //============================================================================**
 
     public FitnessFunction(String name)
@@ -24,7 +24,7 @@ public abstract class FitnessFunction
 
     //============================================================================**
     // doRawFitness()
-    // Description: Calculates and sets the raw fitness of the Chromo parameter X.
+    // Description: Calculates and sets the raw fitness of the genetic_algorithm.Chromo parameter X.
     //============================================================================**
 
 	public abstract void doRawFitness(Chromo X);

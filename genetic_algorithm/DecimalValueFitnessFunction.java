@@ -1,5 +1,5 @@
-//============================================================================**
-// DecimalValueFitnessFunction
+package genetic_algorithm;//============================================================================**
+// genetic_algorithm.DecimalValueFitnessFunction
 // Description: This class serves as a simple fitness function that
 // determines the fitness of a chromosome by computing the sum of the decimal
 // value represented by the chromosome's genes.
@@ -8,7 +8,7 @@
 public class DecimalValueFitnessFunction extends FitnessFunction
 {
     //============================================================================**
-    // DecimalValueFitnessFunction()
+    // genetic_algorithm.DecimalValueFitnessFunction()
     //============================================================================**
 
     public DecimalValueFitnessFunction()

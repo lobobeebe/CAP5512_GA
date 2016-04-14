@@ -1,11 +1,11 @@
-//============================================================================**
+package genetic_algorithm;//============================================================================**
 // Imports
 //============================================================================**
 
 import java.util.Random;
 
 //============================================================================**
-// Chromo Class
+// genetic_algorithm.Chromo Class
 //============================================================================**
 
 class Chromo
@@ -24,9 +24,17 @@ class Chromo
 	private Random mRandomizer;
 
     //============================================================================**
-    // Chromo()
+    // genetic_algorithm.Chromo()
     //============================================================================**
 
+	/**
+	 * Constructor
+	 * @param randomizer Random number generator
+	 * @param numGenes Number of Genes in the Chromosome
+	 * @param geneSize Size of the Genes
+	 * @param minDnaValue Minimum value to be stored per gene value
+     * @param maxDnaValue Maximum value to be stored per gene value
+     */
     Chromo(Random randomizer, int numGenes, int geneSize, int minDnaValue, int maxDnaValue)
 	{
 		mRandomizer = randomizer;
@@ -81,6 +89,22 @@ class Chromo
                 }
             }
         }
+	}
+
+	/**
+	 * Checks equality of Chromos
+	 * @return True if the Chromos are equal; false otherwise
+     */
+	public boolean equals(Object other)
+	{
+		boolean isEqual = false;
+
+		if(other != null && other instanceof Chromo)
+		{
+            isEqual = toString().equals(other.toString());
+		}
+
+		return isEqual;
 	}
 
     //============================================================================**
