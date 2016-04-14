@@ -13,8 +13,6 @@ public class RunStatistics
     private int mNumPopulation;
 	private int mNumBestFitnessInPopulation;
 
-    private int mNumPrintedGeneration;
-
 	//============================================================================**
 	// RunStatistics()
 	//============================================================================**
@@ -58,7 +56,7 @@ public class RunStatistics
 
 	public void printGeneration()
 	{
-		System.out.println(++mNumPrintedGeneration + ", " + (mNumBestFitnessInPopulation / (double)mNumPopulation));
+		System.out.println(mNumBestFitnessInPopulation / (double)mNumPopulation);
 
 		resetGeneration();
 	}

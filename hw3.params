@@ -1,7 +1,7 @@
 ProblemType = Topology
 NumRuns = 1
-NumGenerations = 50
-NumPopulationDimensions = 3
+NumGenerations = 20
+NumPopulationDimensions = 2
 PopulationDimensionSize = 32
 NeighborhoodRadius = 3
 NeighborhoodType = COMPACT
