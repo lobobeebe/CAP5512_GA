@@ -1,4 +1,4 @@
-package genetic_algorithm;//============================================================================**
+//============================================================================**
 // Imports
 //============================================================================**
 
@@ -20,6 +20,8 @@ class Chromo
     private int mMinDnaValue;
     private int mMaxDnaValue;
 
+	public double sclFitness;
+	public double proFitness;
 	private double mRawFitness;
 	private Random mRandomizer;
 

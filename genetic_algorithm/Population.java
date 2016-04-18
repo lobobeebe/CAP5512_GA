@@ -1,6 +1,3 @@
-package genetic_algorithm; /**
- * Imports
- */
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -50,6 +47,9 @@ public class Population
     private double mMutationRate;
 
     private String mSelectionType;
+	
+	public static double sumSclFitness;
+    public static double sumProFitness;
 
     /**
      * Constructor
@@ -98,11 +98,14 @@ public class Population
     public void calculationFitnessByFunction(FitnessFunction function, RunStatistics statistics, int generationNum,
         int runNum)
     {
+		
         for(Chromo chromo : mIndividuals)
         {
             function.doRawFitness(chromo);
             statistics.recordSolution(generationNum, runNum, chromo);
         }
+		
+			
     }
 
     /**
@@ -376,6 +379,35 @@ public class Population
      */
     private Chromo selectParentFitnessProportional(Chromo[] neighborhood)
     {
+		
+		/*  Scale Fitnesses, not sure if this is where its supposed to go */
+		
+		for (int index = 0; index < neighborhood.length; index++)
+		{
+			neighborhood[index].sclFitness = neighborhood[index].getRawFitness() + .000001;
+			sumSclFitness += neighborhood[index].sclFitness;
+		}
+		
+		/* Set Proportional fitnesses */
+		for (int index = 0; index < neighborhood.length; index++)
+		{
+			neighborhood[index].proFitness = neighborhood[index].sclFitness/sumSclFitness;
+			sumProFitness = sumProFitness + neighborhood[index].proFitness;
+		}
+		
+		
+		
+		/*  Proportional Selection
+			randnum = Search.r.nextDouble();
+			for (j=0; j<Parameters.popSize; j++)
+			{
+				rWheel = rWheel + Search.member[j].proFitness;
+				if (randnum < rWheel) return(j);
+			}
+		*/
+		
+		
+		
         // Sort the neighborhood by fitness
         Arrays.sort(neighborhood, new FitnessComparator());
 
@@ -384,20 +416,29 @@ public class Population
 
         for(int index = 0; index < neighborhood.length; index++)
         {
-            sumFitness += neighborhood[index].getRawFitness();
+            sumFitness += neighborhood[index].proFitness;
         }
 
         // Roll a random number between 0 and the sum to choose a chromosome weighted by its fitness
-        int randomNumber = mRandomizer.nextInt(sumFitness);
+        //int randomNumber = mRandomizer.nextInt(sumFitness);
 
+		double randomNumber = mRandomizer.nextDouble();
         int parentIndex = 0;
-        double currentFitness = neighborhood[parentIndex].getRawFitness();
+        //double currentFitness = neighborhood[parentIndex].getRawFitness();
+		double currentFitness = 0;
 
-        while(currentFitness < randomNumber)
+        /*while(currentFitness < randomNumber)
         {
-            currentFitness += neighborhood[++parentIndex].getRawFitness();
+            currentFitness += neighborhood[parentIndex++].getRawFitness();
+        }*/
+		
+		for(int index = 0; index < neighborhood.length; index++)
+        {
+            currentFitness += neighborhood[index].proFitness;
+				if (randomNumber < currentFitness) return(neighborhood[index]);
         }
-
+		
+		//System.out.println(neighborhood[parentIndex]);
         return neighborhood[parentIndex];
     }
 }
