@@ -1,6 +1,6 @@
 ProblemType = Topology
 NumRuns = 1
-NumGenerations = 20
+NumGenerations = 100
 NumPopulationDimensions = 2
 PopulationDimensionSize = 32
 NeighborhoodRadius = 3

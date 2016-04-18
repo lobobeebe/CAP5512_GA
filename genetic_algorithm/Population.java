@@ -1,4 +1,5 @@
-package genetic_algorithm; /**
+package genetic_algorithm;
+/**
  * Imports
  */
 
@@ -351,23 +352,23 @@ public class Population
      */
     private Chromo selectParentLinearRanking(Chromo[] neighborhood)
     {
-        // Sort the neighborhood by fitness
-        Arrays.sort(neighborhood, new FitnessComparator());
-
         // Roll a random number between 0 and 1
         double randomNumber = mRandomizer.nextDouble();
 
+        // Sort the neighborhood by fitness
+        Arrays.sort(neighborhood, new FitnessComparator());
+
         for(int index = 1; index <= neighborhood.length; index++)
         {
-            if(randomNumber < (1 / (index + 1)))
+            if(randomNumber < (1.0 / (double)(index + 1)))
             {
                 return neighborhood[index - 1];
             }
 
-            randomNumber -= (1 / index + 1);
+            randomNumber -= 1 / (double)(index + 1);
         }
 
-        return neighborhood[neighborhood.length - 1];
+        return neighborhood[0];
     }
 
     /**
@@ -376,9 +377,6 @@ public class Population
      */
     private Chromo selectParentFitnessProportional(Chromo[] neighborhood)
     {
-        // Sort the neighborhood by fitness
-        Arrays.sort(neighborhood, new FitnessComparator());
-
         // Calculate the sum of fitnesses from all the chromosomes in the neighborhood
         int sumFitness = 0;
 
@@ -389,15 +387,17 @@ public class Population
 
         // Roll a random number between 0 and the sum to choose a chromosome weighted by its fitness
         int randomNumber = mRandomizer.nextInt(sumFitness);
+        int currentFitness = 0;
 
-        int parentIndex = 0;
-        double currentFitness = neighborhood[parentIndex].getRawFitness();
-
-        while(currentFitness < randomNumber)
+        for(int index = 0; index < neighborhood.length; index++)
         {
-            currentFitness += neighborhood[++parentIndex].getRawFitness();
+            currentFitness += neighborhood[index].getRawFitness();
+            if(currentFitness >= randomNumber)
+            {
+                return neighborhood[index];
+            }
         }
 
-        return neighborhood[parentIndex];
+        return neighborhood[0];
     }
 }

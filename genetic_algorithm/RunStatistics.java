@@ -1,5 +1,7 @@
-package genetic_algorithm;//============================================================================**
-// genetic_algorithm.RunStatistics Class
+package genetic_algorithm;
+
+//============================================================================**
+// RunStatistics Class
 //============================================================================**
 
 public class RunStatistics
