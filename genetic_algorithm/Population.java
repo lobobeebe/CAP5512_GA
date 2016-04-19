@@ -104,7 +104,22 @@ public class Population
             function.doRawFitness(chromo);
             statistics.recordSolution(generationNum, runNum, chromo);
         }
+		sumSclFitness = 0;
+		sumProFitness = 0;
+		/*  Scale Fitnesses, not sure if this is where its supposed to go */
 		
+		for (Chromo chromo : mIndividuals)
+		{
+			chromo.sclFitness = chromo.getRawFitness() + .000001;
+			sumSclFitness += chromo.sclFitness;
+		}
+		
+		/* Set Proportional fitnesses */
+		for (Chromo chromo : mIndividuals)
+		{
+			chromo.proFitness = chromo.sclFitness/sumSclFitness;
+			sumProFitness = sumProFitness + chromo.proFitness;
+		}
 			
     }
 
@@ -125,8 +140,12 @@ public class Population
         {
             int locationIndex = dimensionalPositionToIndex(neighborhoodDimensionalLocations.get(location));
             neighborhood[location] = mIndividuals[locationIndex];
+			//System.out.print(neighborhood[location]);
         }
-
+		
+		
+		//int x = 3/0;
+		
         return neighborhood;
     }
 
@@ -353,7 +372,7 @@ public class Population
      * @param neighborhood The neighborhood from which to select a parent
      */
     private Chromo selectParentLinearRanking(Chromo[] neighborhood)
-    {
+    {		
         // Sort the neighborhood by fitness
         Arrays.sort(neighborhood, new FitnessComparator());
 
@@ -362,15 +381,15 @@ public class Population
 
         for(int index = 1; index <= neighborhood.length; index++)
         {
-            if(randomNumber < (1 / (index + 1)))
+            if(randomNumber < (1 / (double)(index + 1)))
             {
                 return neighborhood[index - 1];
             }
 
-            randomNumber -= (1 / index + 1);
+            randomNumber -= (1 / (double)index + 1);
         }
 
-        return neighborhood[neighborhood.length - 1];
+        return neighborhood[0];
     }
 
     /**
@@ -380,20 +399,6 @@ public class Population
     private Chromo selectParentFitnessProportional(Chromo[] neighborhood)
     {
 		
-		/*  Scale Fitnesses, not sure if this is where its supposed to go */
-		
-		for (int index = 0; index < neighborhood.length; index++)
-		{
-			neighborhood[index].sclFitness = neighborhood[index].getRawFitness() + .000001;
-			sumSclFitness += neighborhood[index].sclFitness;
-		}
-		
-		/* Set Proportional fitnesses */
-		for (int index = 0; index < neighborhood.length; index++)
-		{
-			neighborhood[index].proFitness = neighborhood[index].sclFitness/sumSclFitness;
-			sumProFitness = sumProFitness + neighborhood[index].proFitness;
-		}
 		
 		
 		
@@ -416,7 +421,12 @@ public class Population
 
         for(int index = 0; index < neighborhood.length; index++)
         {
-            sumFitness += neighborhood[index].proFitness;
+            sumFitness += neighborhood[index].getRawFitness();
+        }
+		
+		for(int index = 0; index < neighborhood.length; index++)
+        {
+            neighborhood[index].proFitness = (neighborhood[index].getRawFitness() / sumFitness);
         }
 
         // Roll a random number between 0 and the sum to choose a chromosome weighted by its fitness
@@ -425,7 +435,8 @@ public class Population
 		double randomNumber = mRandomizer.nextDouble();
         int parentIndex = 0;
         //double currentFitness = neighborhood[parentIndex].getRawFitness();
-		double currentFitness = 0;
+        double currentFitness = neighborhood[parentIndex].proFitness;
+		//double currentFitness = 0;
 
         /*while(currentFitness < randomNumber)
         {
@@ -438,7 +449,7 @@ public class Population
 				if (randomNumber < currentFitness) return(neighborhood[index]);
         }
 		
-		//System.out.println(neighborhood[parentIndex]);
+		
         return neighborhood[parentIndex];
     }
 }
