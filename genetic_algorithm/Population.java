@@ -1,4 +1,3 @@
-package genetic_algorithm;
 /**
  * Imports
  */
@@ -89,6 +88,14 @@ public class Population
         {
             mIndividuals[i] = new Chromo(mRandomizer, mNumGenes, mGeneSize, mMinDnaValue, mMaxDnaValue);
         }
+
+        //Set neighborhoods
+        for(int i = 0; i < mIndividuals.length; i++)
+        {
+            mIndividuals[i].setNeighborhoodIndices(getNeighborhood(i));
+            mIndividuals[i-100].setNeighborhoodIndices(getNeighborhood(i));
+
+        }
     }
 
     /**
@@ -112,20 +119,16 @@ public class Population
      * @param index The index for which a neighborhood should be found.
      * @return An array of individuals within the index's neighborhood
      */
-    private Chromo[] getNeighborhood(int index)
+    private ArrayList<Integer> getNeighborhood(int index)
     {
-        ArrayList<int[]> neighborhoodDimensionalLocations = new ArrayList<>();
+        ArrayList<Integer> neighborhoodLocationIndex = new ArrayList<>();
         int[] initialDimensionalPosition = indexToDimensionalPosition(index);
-        getNeighborhood(initialDimensionalPosition, initialDimensionalPosition, neighborhoodDimensionalLocations);
+        getNeighborhood(initialDimensionalPosition, initialDimensionalPosition, neighborhoodLocationIndex);
 
-        Chromo[] neighborhood = new Chromo[neighborhoodDimensionalLocations.size()];
-        for(int location = 0; location < neighborhoodDimensionalLocations.size(); location++)
-        {
-            int locationIndex = dimensionalPositionToIndex(neighborhoodDimensionalLocations.get(location));
-            neighborhood[location] = mIndividuals[locationIndex];
-        }
+        for(int i: neighborhoodLocationIndex)
+            System.out.print(i + " ");
 
-        return neighborhood;
+        return neighborhoodLocationIndex;
     }
 
     /**
@@ -134,13 +137,14 @@ public class Population
      * @param position
      * @param neighborhoodList
      */
-    public void getNeighborhood(int[] initPosition, int[] position, ArrayList<int[]> neighborhoodList)
+    public void getNeighborhood(int[] initPosition, int[] position, ArrayList<Integer> neighborhoodList)
     {
         // If the current position is not already in the neighborhood list and it is within the neighborhood...
-        if(!listContains(neighborhoodList, position) && isWithinNeighborhood(initPosition, position))
+        if(!listContains(neighborhoodList, dimensionalPositionToIndex(position)) && isWithinNeighborhood(initPosition, position))
         {
             // Add the current position to the neighborhood
-            neighborhoodList.add(position);
+            neighborhoodList.add(dimensionalPositionToIndex(position));
+
 
             // Perform the same check recursively for its immediate neighbors in all dimensions
             for (int dimension = 0; dimension < mNumDimensions; dimension++)
@@ -156,11 +160,11 @@ public class Population
         }
     }
 
-    public static boolean listContains(ArrayList<int[]> locationList, int[] potentialLocation)
+    public static boolean listContains(ArrayList<Integer> locationList, int potentialLocation)
     {
-        for(int[] location : locationList)
+        for(int location : locationList)
         {
-            if(Arrays.equals(location, potentialLocation))
+            if(location == potentialLocation)
             {
                 return true;
             }
@@ -328,7 +332,12 @@ public class Population
     {
         Chromo parent = null;
 
-        Chromo[] neighborhood = getNeighborhood(individualIndex);
+
+        //Change!!
+        ArrayList<Integer> indices = mIndividuals[individualIndex].getNeighborhoodIndices();
+        Chromo[] neighborhood = new Chromo[indices.size()];
+        for(int i = 0; i < indices.size(); i++)
+            neighborhood[i] = mIndividuals[indices.get(i)];
 
         if(mSelectionType.equalsIgnoreCase(FITNESS_PROPORTIONAL_SELECTION))
         {
@@ -352,23 +361,23 @@ public class Population
      */
     private Chromo selectParentLinearRanking(Chromo[] neighborhood)
     {
-        // Roll a random number between 0 and 1
-        double randomNumber = mRandomizer.nextDouble();
-
         // Sort the neighborhood by fitness
         Arrays.sort(neighborhood, new FitnessComparator());
 
+        // Roll a random number between 0 and 1
+        double randomNumber = mRandomizer.nextDouble();
+
         for(int index = 1; index <= neighborhood.length; index++)
         {
-            if(randomNumber < (1.0 / (double)(index + 1)))
+            if(randomNumber < (1 / (index + 1)))
             {
                 return neighborhood[index - 1];
             }
 
-            randomNumber -= 1 / (double)(index + 1);
+            randomNumber -= (1 / index + 1);
         }
 
-        return neighborhood[0];
+        return neighborhood[neighborhood.length - 1];
     }
 
     /**
@@ -377,6 +386,9 @@ public class Population
      */
     private Chromo selectParentFitnessProportional(Chromo[] neighborhood)
     {
+        // Sort the neighborhood by fitness
+        Arrays.sort(neighborhood, new FitnessComparator());
+
         // Calculate the sum of fitnesses from all the chromosomes in the neighborhood
         int sumFitness = 0;
 
@@ -387,17 +399,15 @@ public class Population
 
         // Roll a random number between 0 and the sum to choose a chromosome weighted by its fitness
         int randomNumber = mRandomizer.nextInt(sumFitness);
-        int currentFitness = 0;
 
-        for(int index = 0; index < neighborhood.length; index++)
+        int parentIndex = 0;
+        double currentFitness = neighborhood[parentIndex].getRawFitness();
+
+        while(currentFitness < randomNumber)
         {
-            currentFitness += neighborhood[index].getRawFitness();
-            if(currentFitness >= randomNumber)
-            {
-                return neighborhood[index];
-            }
+            currentFitness += neighborhood[++parentIndex].getRawFitness();
         }
 
-        return neighborhood[0];
+        return neighborhood[parentIndex];
     }
 }
