@@ -104,23 +104,7 @@ public class Population
             function.doRawFitness(chromo);
             statistics.recordSolution(generationNum, runNum, chromo);
         }
-		sumSclFitness = 0;
-		sumProFitness = 0;
-		/*  Scale Fitnesses, not sure if this is where its supposed to go */
-		
-		for (Chromo chromo : mIndividuals)
-		{
-			chromo.sclFitness = chromo.getRawFitness() + .000001;
-			sumSclFitness += chromo.sclFitness;
-		}
-		
-		/* Set Proportional fitnesses */
-		for (Chromo chromo : mIndividuals)
-		{
-			chromo.proFitness = chromo.sclFitness/sumSclFitness;
-			sumProFitness = sumProFitness + chromo.proFitness;
-		}
-			
+					
     }
 
     /**
@@ -399,25 +383,11 @@ public class Population
     private Chromo selectParentFitnessProportional(Chromo[] neighborhood)
     {
 		
-		
-		
-		
-		/*  Proportional Selection
-			randnum = Search.r.nextDouble();
-			for (j=0; j<Parameters.popSize; j++)
-			{
-				rWheel = rWheel + Search.member[j].proFitness;
-				if (randnum < rWheel) return(j);
-			}
-		*/
-		
-		
-		
         // Sort the neighborhood by fitness
         Arrays.sort(neighborhood, new FitnessComparator());
 
         // Calculate the sum of fitnesses from all the chromosomes in the neighborhood
-        int sumFitness = 0;
+        double sumFitness = 0;
 
         for(int index = 0; index < neighborhood.length; index++)
         {
@@ -429,19 +399,9 @@ public class Population
             neighborhood[index].proFitness = (neighborhood[index].getRawFitness() / sumFitness);
         }
 
-        // Roll a random number between 0 and the sum to choose a chromosome weighted by its fitness
-        //int randomNumber = mRandomizer.nextInt(sumFitness);
-
 		double randomNumber = mRandomizer.nextDouble();
         int parentIndex = 0;
-        //double currentFitness = neighborhood[parentIndex].getRawFitness();
-        double currentFitness = neighborhood[parentIndex].proFitness;
-		//double currentFitness = 0;
-
-        /*while(currentFitness < randomNumber)
-        {
-            currentFitness += neighborhood[parentIndex++].getRawFitness();
-        }*/
+        double currentFitness = neighborhood[parentIndex].getRawFitness();
 		
 		for(int index = 0; index < neighborhood.length; index++)
         {
