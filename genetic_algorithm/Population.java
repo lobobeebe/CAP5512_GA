@@ -1,3 +1,4 @@
+package genetic_algorithm;
 /**
  * Imports
  */
@@ -93,7 +94,8 @@ public class Population
         for(int i = 0; i < mIndividuals.length; i++)
         {
             mIndividuals[i].setNeighborhoodIndices(getNeighborhood(i));
-            mIndividuals[i-100].setNeighborhoodIndices(getNeighborhood(i));
+            //Forces a crash to read prints since it's faster than adding a scanner
+           // mIndividuals[i-100].setNeighborhoodIndices(getNeighborhood(i));
 
         }
     }
@@ -125,8 +127,12 @@ public class Population
         int[] initialDimensionalPosition = indexToDimensionalPosition(index);
         getNeighborhood(initialDimensionalPosition, initialDimensionalPosition, neighborhoodLocationIndex);
 
-        for(int i: neighborhoodLocationIndex)
+        //Printing out the first neighborhood then crashing up above
+      /*  for(int i: neighborhoodLocationIndex){
             System.out.print(i + " ");
+            System.out.println(indexToDimensionalPosition(i)[0] + ", " + indexToDimensionalPosition(i)[1]);
+
+        }*/
 
         return neighborhoodLocationIndex;
     }
@@ -139,12 +145,13 @@ public class Population
      */
     public void getNeighborhood(int[] initPosition, int[] position, ArrayList<Integer> neighborhoodList)
     {
+        boundaryCheck(position);
         // If the current position is not already in the neighborhood list and it is within the neighborhood...
+        System.out.println(position[0] + " " + position[1]);
         if(!listContains(neighborhoodList, dimensionalPositionToIndex(position)) && isWithinNeighborhood(initPosition, position))
         {
             // Add the current position to the neighborhood
             neighborhoodList.add(dimensionalPositionToIndex(position));
-
 
             // Perform the same check recursively for its immediate neighbors in all dimensions
             for (int dimension = 0; dimension < mNumDimensions; dimension++)
@@ -158,6 +165,25 @@ public class Population
                 }
             }
         }
+    }
+
+    /**
+    *
+    *If a number's out of bounds moves it to its correct spot
+    */
+
+    public void boundaryCheck(int [] position){
+
+        for(int i=0; i<mNumDimensions; i++){
+
+            if(position[i] < 0)
+                position[i] += mNumIndividualsPerDimension;
+            if(position[i] >= mNumIndividualsPerDimension)
+                position[i] -= mNumIndividualsPerDimension;
+
+        }
+
+
     }
 
     public static boolean listContains(ArrayList<Integer> locationList, int potentialLocation)
@@ -180,11 +206,10 @@ public class Population
         // Check for out of bounds
         for(int dimension = 0; dimension < mNumDimensions; dimension++)
         {
-            if(position[dimension] < 0 || position[dimension] >= mNumIndividualsPerDimension)
-            {
-                isWithinNeighborhood = false;
-                break;
-            }
+            if(position[dimension] < 0)
+                position[dimension] += mNumIndividualsPerDimension;
+            if(position[dimension] >= mNumIndividualsPerDimension)
+                position[dimension] -= mNumIndividualsPerDimension;
         }
 
         if(isWithinNeighborhood)
@@ -202,6 +227,7 @@ public class Population
         return isWithinNeighborhood;
     }
 
+    //Needs to be able to check distance over edges, maybe normal than also dist of point to edges combined
     private boolean isWithinCompactNeighborhood(int[] initPosition, int[] position)
     {
         // Gather the sum of squared differences in each dimension
@@ -217,6 +243,7 @@ public class Population
         return sumOfSquaredDifferences <= mNeighborhoodRadius * mNeighborhoodRadius;
     }
 
+    //Same problem as above
     private boolean isWithinLinearNeighborhood(int[] initPosition, int[] position)
     {
         // Ensure up to one dimension of the position is different from the initial position
@@ -332,8 +359,6 @@ public class Population
     {
         Chromo parent = null;
 
-
-        //Change!!
         ArrayList<Integer> indices = mIndividuals[individualIndex].getNeighborhoodIndices();
         Chromo[] neighborhood = new Chromo[indices.size()];
         for(int i = 0; i < indices.size(); i++)
@@ -361,23 +386,23 @@ public class Population
      */
     private Chromo selectParentLinearRanking(Chromo[] neighborhood)
     {
-        // Sort the neighborhood by fitness
-        Arrays.sort(neighborhood, new FitnessComparator());
-
         // Roll a random number between 0 and 1
         double randomNumber = mRandomizer.nextDouble();
 
+        // Sort the neighborhood by fitness
+        Arrays.sort(neighborhood, new FitnessComparator());
+
         for(int index = 1; index <= neighborhood.length; index++)
         {
-            if(randomNumber < (1 / (index + 1)))
+            if(randomNumber < (1.0 / (double)(index + 1)))
             {
                 return neighborhood[index - 1];
             }
 
-            randomNumber -= (1 / index + 1);
+            randomNumber -= 1 / (double)(index + 1);
         }
 
-        return neighborhood[neighborhood.length - 1];
+        return neighborhood[0];
     }
 
     /**
@@ -386,9 +411,6 @@ public class Population
      */
     private Chromo selectParentFitnessProportional(Chromo[] neighborhood)
     {
-        // Sort the neighborhood by fitness
-        Arrays.sort(neighborhood, new FitnessComparator());
-
         // Calculate the sum of fitnesses from all the chromosomes in the neighborhood
         int sumFitness = 0;
 
@@ -399,15 +421,17 @@ public class Population
 
         // Roll a random number between 0 and the sum to choose a chromosome weighted by its fitness
         int randomNumber = mRandomizer.nextInt(sumFitness);
+        int currentFitness = 0;
 
-        int parentIndex = 0;
-        double currentFitness = neighborhood[parentIndex].getRawFitness();
-
-        while(currentFitness < randomNumber)
+        for(int index = 0; index < neighborhood.length; index++)
         {
-            currentFitness += neighborhood[++parentIndex].getRawFitness();
+            currentFitness += neighborhood[index].getRawFitness();
+            if(currentFitness >= randomNumber)
+            {
+                return neighborhood[index];
+            }
         }
 
-        return neighborhood[parentIndex];
+        return neighborhood[0];
     }
 }
