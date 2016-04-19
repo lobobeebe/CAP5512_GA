@@ -1,4 +1,4 @@
-package genetic_algorithm;//============================================================================**
+//package genetic_algorithm;//============================================================================**
 // Imports
 //============================================================================**
 
@@ -60,7 +60,6 @@ class Chromo
 				}
 			}
 		}
-		mNeighborhoodIndices = new ArrayList<>();
 	}
 
     //============================================================================**
@@ -213,20 +212,6 @@ class Chromo
         }
 
         return stringRepresentation;
-    }
-
-
-    void setNeighborhoodIndices(ArrayList<Integer> neighborhood){
-
-        for(int i: neighborhood)
-            mNeighborhoodIndices.add(i);
-
-    }
-
-    ArrayList<Integer> getNeighborhoodIndices(){
-
-        return mNeighborhoodIndices;
-
     }
 
 }

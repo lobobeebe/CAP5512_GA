@@ -1,4 +1,4 @@
-package genetic_algorithm;
+//package genetic_algorithm;
 /**
  * Imports
  */
@@ -52,6 +52,8 @@ public class Population
 
     private String mSelectionType;
 
+    private ArrayList<ArrayList<Integer>> mNeighborhoodsList;
+
     /**
      * Constructor
      * @param randomizer Random number generator
@@ -91,12 +93,10 @@ public class Population
         }
 
         //Set neighborhoods
+        mNeighborhoodsList = new ArrayList<>();
         for(int i = 0; i < mIndividuals.length; i++)
         {
-            mIndividuals[i].setNeighborhoodIndices(getNeighborhood(i));
-            //Forces a crash to read prints since it's faster than adding a scanner
-           // mIndividuals[i-100].setNeighborhoodIndices(getNeighborhood(i));
-
+            mNeighborhoodsList.add(getNeighborhood(i));
         }
     }
 
@@ -127,13 +127,6 @@ public class Population
         int[] initialDimensionalPosition = indexToDimensionalPosition(index);
         getNeighborhood(initialDimensionalPosition, initialDimensionalPosition, neighborhoodLocationIndex);
 
-        //Printing out the first neighborhood then crashing up above
-      /*  for(int i: neighborhoodLocationIndex){
-            System.out.print(i + " ");
-            System.out.println(indexToDimensionalPosition(i)[0] + ", " + indexToDimensionalPosition(i)[1]);
-
-        }*/
-
         return neighborhoodLocationIndex;
     }
 
@@ -147,7 +140,7 @@ public class Population
     {
         boundaryCheck(position);
         // If the current position is not already in the neighborhood list and it is within the neighborhood...
-        System.out.println(position[0] + " " + position[1]);
+        //System.out.println(position[0] + " " + position[1]);
         if(!listContains(neighborhoodList, dimensionalPositionToIndex(position)) && isWithinNeighborhood(initPosition, position))
         {
             // Add the current position to the neighborhood
@@ -359,10 +352,13 @@ public class Population
     {
         Chromo parent = null;
 
-        ArrayList<Integer> indices = mIndividuals[individualIndex].getNeighborhoodIndices();
-        Chromo[] neighborhood = new Chromo[indices.size()];
-        for(int i = 0; i < indices.size(); i++)
-            neighborhood[i] = mIndividuals[indices.get(i)];
+        ArrayList<Integer> localNeighborhoodIndecies = mNeighborhoodsList.get(individualIndex);
+        int neighborhoodSize = localNeighborhoodIndecies.size();
+
+
+        Chromo[] neighborhood = new Chromo[neighborhoodSize];
+        for(int i = 0; i < neighborhoodSize; i++)
+            neighborhood[i] = mIndividuals[localNeighborhoodIndecies.get(i)];
 
         if(mSelectionType.equalsIgnoreCase(FITNESS_PROPORTIONAL_SELECTION))
         {
