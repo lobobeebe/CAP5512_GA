@@ -58,8 +58,9 @@ public class Population
      * Constructor
      * @param randomizer Random number generator
      * @param configManager Config Manager for the project
+     * @param initNeighborhoods Flag to check if the neighborhoods must be found
      */
-    public Population(Random randomizer, ConfigManager configManager)
+    public Population(Random randomizer, ConfigManager configManager, boolean initNeighborhoods)
     {
         mRandomizer = randomizer;
         mNumIndividualsPerDimension = configManager.getIntParameter("PopulationDimensionSize");
@@ -92,12 +93,14 @@ public class Population
             mIndividuals[i] = new Chromo(mRandomizer, mNumGenes, mGeneSize, mMinDnaValue, mMaxDnaValue);
         }
 
-        //Set neighborhoods
         mNeighborhoodsList = new ArrayList<>();
-        for(int i = 0; i < mIndividuals.length; i++)
-        {
-            mNeighborhoodsList.add(getNeighborhood(i));
-        }
+
+        //Calculate neighborhoods if needed
+        if(initNeighborhoods)
+            for(int i = 0; i < mIndividuals.length; i++)
+            {
+                mNeighborhoodsList.add(getNeighborhood(i));
+            }
     }
 
     /**
@@ -138,7 +141,6 @@ public class Population
      */
     public void getNeighborhood(int[] initPosition, int[] position, ArrayList<Integer> neighborhoodList)
     {
-        boundaryCheck(position);
         // If the current position is not already in the neighborhood list and it is within the neighborhood...
         //System.out.println(position[0] + " " + position[1]);
         if(!listContains(neighborhoodList, dimensionalPositionToIndex(position)) && isWithinNeighborhood(initPosition, position))
@@ -195,15 +197,6 @@ public class Population
     private boolean isWithinNeighborhood(int[] initPosition, int[] position)
     {
         boolean isWithinNeighborhood = true;
-
-        // Check for out of bounds
-        for(int dimension = 0; dimension < mNumDimensions; dimension++)
-        {
-            if(position[dimension] < 0)
-                position[dimension] += mNumIndividualsPerDimension;
-            if(position[dimension] >= mNumIndividualsPerDimension)
-                position[dimension] -= mNumIndividualsPerDimension;
-        }
 
         if(isWithinNeighborhood)
         {
@@ -294,11 +287,14 @@ public class Population
 
     public int dimensionalPositionToIndex(int[] dimensionalPosition)
     {
+        int[] clone = dimensionalPosition.clone();
+        boundaryCheck(clone);
+
         int index = 0;
 
         for(int dimension = 0; dimension < mNumDimensions; dimension++)
         {
-            index += dimensionalPosition[dimension] *
+            index += clone[dimension] *
                 ((int) Math.pow(mNumIndividualsPerDimension, mNumDimensions - dimension - 1));
         }
 
@@ -430,4 +426,26 @@ public class Population
 
         return neighborhood[0];
     }
+
+    public ArrayList<ArrayList<Integer>> getNeighborhoods(){
+
+        return mNeighborhoodsList;
+    }
+
+    public void setNeighborhoods(ArrayList<ArrayList<Integer>> neighborhoods){
+
+        int size = neighborhoods.size();
+        ArrayList<ArrayList<Integer>> local = new ArrayList<>();
+
+        for(int i = 0; i < size; i++){
+            ArrayList<Integer> pop = new ArrayList<>();
+            for(int j = 0; j < neighborhoods.get(i).size(); j++)
+            {
+                pop.add(neighborhoods.get(i).get(j));
+            }
+            local.add(pop);
+        }
+        mNeighborhoodsList = local;
+    }
+
 }

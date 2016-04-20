@@ -1,8 +1,9 @@
-package genetic_algorithm;//============================================================================**
+//package genetic_algorithm;//============================================================================**
 // Imports
 //============================================================================**
 
 import java.util.Random;
+import java.util.ArrayList;
 
 //============================================================================**
 // genetic_algorithm.GeneticAlgorithm Class
@@ -24,6 +25,9 @@ class GeneticAlgorithm
 	private FitnessFunction mFitnessFunction;
 	private RunStatistics mStatistics;
 
+	private ArrayList<ArrayList<Integer>> mNeighborhoods;
+	private boolean mInitCheck;
+
     //============================================================================**
     // genetic_algorithm.GeneticAlgorithm()
     //============================================================================**
@@ -31,6 +35,8 @@ class GeneticAlgorithm
     GeneticAlgorithm(ConfigManager params)
 	{
 		mParams = params;
+		mNeighborhoods = new ArrayList<ArrayList<Integer>>();
+		mInitCheck = true;
 	}
 
     //============================================================================**
@@ -47,7 +53,8 @@ class GeneticAlgorithm
 
         String problemType = mParams.getStringParameter("ProblemType");
 
-		mPopulation = new Population(mRandomizer, mParams);
+        System.out.println("Setting up problem...\n");
+		mPopulation = new Population(mRandomizer, mParams, true);
 
 		if (problemType.equals("Topology"))
 		{
@@ -95,10 +102,27 @@ class GeneticAlgorithm
 
     private void performRun(Population population, int runNum, boolean initChromos)
 	{
+
+	    ArrayList<ArrayList<Integer>> local;
 		if(initChromos)
 		{
-			mPopulation = new Population(mRandomizer, mParams);
+		    //If it's the first run, store the list of neighbors to avoid recomputing them
+			if(mInitCheck)
+            {
+                local = mPopulation.getNeighborhoods();
+                for(int i = 0; i<local.size(); i++){
+                    ArrayList<Integer> pop = new ArrayList<>();
+                    for(int j = 0; j < local.get(i).size(); j++)
+                        pop.add(local.get(i).get(j));
+                    mNeighborhoods.add(pop);
+                }
+            }
+            mPopulation = new Population(mRandomizer, mParams, false);
+            mPopulation.setNeighborhoods(mNeighborhoods);
+
+            mInitCheck = false;
 		}
+
 
 		// Perform generations
 		for (int generationNum = 1; generationNum <= mNumGenerations; generationNum++)
