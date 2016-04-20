@@ -1,8 +1,9 @@
-//package genetic_algorithm;//============================================================================**
+package genetic_algorithm;
+
+//============================================================================**
 // Imports
 //============================================================================**
 
-import java.util.ArrayList;
 import java.util.Random;
 
 //============================================================================**
@@ -23,8 +24,6 @@ class Chromo
 
 	private double mRawFitness;
 	private Random mRandomizer;
-
-	private ArrayList<Integer> mNeighborhoodIndices;
 
     //============================================================================**
     // genetic_algorithm.Chromo()
