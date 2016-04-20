@@ -1,7 +1,8 @@
-package genetic_algorithm;//============================================================================**
+//package genetic_algorithm;//============================================================================**
 // Imports
 //============================================================================**
 
+import java.util.ArrayList;
 import java.util.Random;
 
 //============================================================================**
@@ -23,6 +24,8 @@ class Chromo
 	private double mRawFitness;
 	private Random mRandomizer;
 
+	private ArrayList<Integer> mNeighborhoodIndices;
+
     //============================================================================**
     // genetic_algorithm.Chromo()
     //============================================================================**
@@ -43,7 +46,7 @@ class Chromo
 
         mMinDnaValue = minDnaValue;
         mMaxDnaValue = maxDnaValue;
-		
+
 		//  Set gene list to a sequence of random keys
 		mGeneList = new int[mNumGenes][mGeneSize];
 
@@ -77,7 +80,7 @@ class Chromo
     //============================================================================**
 
 	void doMutation(double mutationRate)
-	{		
+	{
         for (int geneIndex = 0; geneIndex < mNumGenes; geneIndex++)
         {
             for(int dnaIndex = 0; dnaIndex < mGeneSize; dnaIndex++)
@@ -210,4 +213,5 @@ class Chromo
 
         return stringRepresentation;
     }
+
 }

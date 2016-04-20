@@ -1,4 +1,4 @@
-package genetic_algorithm;
+//package genetic_algorithm;
 /**
  * Imports
  */
@@ -52,6 +52,8 @@ public class Population
 
     private String mSelectionType;
 
+    private ArrayList<ArrayList<Integer>> mNeighborhoodsList;
+
     /**
      * Constructor
      * @param randomizer Random number generator
@@ -89,6 +91,13 @@ public class Population
         {
             mIndividuals[i] = new Chromo(mRandomizer, mNumGenes, mGeneSize, mMinDnaValue, mMaxDnaValue);
         }
+
+        //Set neighborhoods
+        mNeighborhoodsList = new ArrayList<>();
+        for(int i = 0; i < mIndividuals.length; i++)
+        {
+            mNeighborhoodsList.add(getNeighborhood(i));
+        }
     }
 
     /**
@@ -112,20 +121,13 @@ public class Population
      * @param index The index for which a neighborhood should be found.
      * @return An array of individuals within the index's neighborhood
      */
-    private Chromo[] getNeighborhood(int index)
+    private ArrayList<Integer> getNeighborhood(int index)
     {
-        ArrayList<int[]> neighborhoodDimensionalLocations = new ArrayList<>();
+        ArrayList<Integer> neighborhoodLocationIndex = new ArrayList<>();
         int[] initialDimensionalPosition = indexToDimensionalPosition(index);
-        getNeighborhood(initialDimensionalPosition, initialDimensionalPosition, neighborhoodDimensionalLocations);
+        getNeighborhood(initialDimensionalPosition, initialDimensionalPosition, neighborhoodLocationIndex);
 
-        Chromo[] neighborhood = new Chromo[neighborhoodDimensionalLocations.size()];
-        for(int location = 0; location < neighborhoodDimensionalLocations.size(); location++)
-        {
-            int locationIndex = dimensionalPositionToIndex(neighborhoodDimensionalLocations.get(location));
-            neighborhood[location] = mIndividuals[locationIndex];
-        }
-
-        return neighborhood;
+        return neighborhoodLocationIndex;
     }
 
     /**
@@ -134,13 +136,15 @@ public class Population
      * @param position
      * @param neighborhoodList
      */
-    public void getNeighborhood(int[] initPosition, int[] position, ArrayList<int[]> neighborhoodList)
+    public void getNeighborhood(int[] initPosition, int[] position, ArrayList<Integer> neighborhoodList)
     {
+        boundaryCheck(position);
         // If the current position is not already in the neighborhood list and it is within the neighborhood...
-        if(!listContains(neighborhoodList, position) && isWithinNeighborhood(initPosition, position))
+        //System.out.println(position[0] + " " + position[1]);
+        if(!listContains(neighborhoodList, dimensionalPositionToIndex(position)) && isWithinNeighborhood(initPosition, position))
         {
             // Add the current position to the neighborhood
-            neighborhoodList.add(position);
+            neighborhoodList.add(dimensionalPositionToIndex(position));
 
             // Perform the same check recursively for its immediate neighbors in all dimensions
             for (int dimension = 0; dimension < mNumDimensions; dimension++)
@@ -156,11 +160,30 @@ public class Population
         }
     }
 
-    public static boolean listContains(ArrayList<int[]> locationList, int[] potentialLocation)
+    /**
+    *
+    *If a number's out of bounds moves it to its correct spot
+    */
+
+    public void boundaryCheck(int [] position){
+
+        for(int i=0; i<mNumDimensions; i++){
+
+            if(position[i] < 0)
+                position[i] += mNumIndividualsPerDimension;
+            if(position[i] >= mNumIndividualsPerDimension)
+                position[i] -= mNumIndividualsPerDimension;
+
+        }
+
+
+    }
+
+    public static boolean listContains(ArrayList<Integer> locationList, int potentialLocation)
     {
-        for(int[] location : locationList)
+        for(int location : locationList)
         {
-            if(Arrays.equals(location, potentialLocation))
+            if(location == potentialLocation)
             {
                 return true;
             }
@@ -176,11 +199,10 @@ public class Population
         // Check for out of bounds
         for(int dimension = 0; dimension < mNumDimensions; dimension++)
         {
-            if(position[dimension] < 0 || position[dimension] >= mNumIndividualsPerDimension)
-            {
-                isWithinNeighborhood = false;
-                break;
-            }
+            if(position[dimension] < 0)
+                position[dimension] += mNumIndividualsPerDimension;
+            if(position[dimension] >= mNumIndividualsPerDimension)
+                position[dimension] -= mNumIndividualsPerDimension;
         }
 
         if(isWithinNeighborhood)
@@ -198,6 +220,7 @@ public class Population
         return isWithinNeighborhood;
     }
 
+    //Needs to be able to check distance over edges, maybe normal than also dist of point to edges combined
     private boolean isWithinCompactNeighborhood(int[] initPosition, int[] position)
     {
         // Gather the sum of squared differences in each dimension
@@ -213,6 +236,7 @@ public class Population
         return sumOfSquaredDifferences <= mNeighborhoodRadius * mNeighborhoodRadius;
     }
 
+    //Same problem as above
     private boolean isWithinLinearNeighborhood(int[] initPosition, int[] position)
     {
         // Ensure up to one dimension of the position is different from the initial position
@@ -328,7 +352,13 @@ public class Population
     {
         Chromo parent = null;
 
-        Chromo[] neighborhood = getNeighborhood(individualIndex);
+        ArrayList<Integer> localNeighborhoodIndecies = mNeighborhoodsList.get(individualIndex);
+        int neighborhoodSize = localNeighborhoodIndecies.size();
+
+
+        Chromo[] neighborhood = new Chromo[neighborhoodSize];
+        for(int i = 0; i < neighborhoodSize; i++)
+            neighborhood[i] = mIndividuals[localNeighborhoodIndecies.get(i)];
 
         if(mSelectionType.equalsIgnoreCase(FITNESS_PROPORTIONAL_SELECTION))
         {
